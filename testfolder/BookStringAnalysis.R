@@ -5,12 +5,15 @@ options(digits = 3)
 
 #search for the book title in the Gutenberg index
 
-book = "Bible"
+bookterm1 = "Heights"
+bookterm2 = ""
 bookindex <- gutenberg_metadata
-booksearch <- str_detect(bookindex$title, book)
+bookindex
+booksearch <- str_detect(bookindex$title, bookterm1) & str_detect(bookindex$title, bookterm2)
 
 #display results, and the total counts
 
+bookindex[which(booksearch),]
 bookindex[which(booksearch),] %>% select(title) 
 sum(booksearch, na.rm = TRUE)
 
@@ -21,13 +24,20 @@ gutenberg_works(str_detect(title, book))
 
 #download based on gutenberg_id number
 
-bookdownload <- gutenberg_download(10)
+bookdownload <- gutenberg_download(768)
 
-#view header of book
+#view header and full book
 head(bookdownload)
+bookdownload %>% view()
 
 #unnest words in string into individual rows
 RowStringsToWords <- bookdownload  %>% unnest_tokens(words,text, token = "words")
+RowStringsToWords
+#words used over 100 times (including common words)
+RowStringsToWords %>% count(words) %>% filter(n >= 100) %>% arrange(desc(n))
+
+#search word frequency
+RowStringsToWords %>% filter(words == "sheep")
 
 #filtering out common words
 words2 <- RowStringsToWords %>% filter (!words %in% stop_words$word)
@@ -54,5 +64,5 @@ book_sentiments %>% filter(value > 0) %>% count()
 table(book_sentiments$value)                      
 
 #top words with a certain sentiment value
-book_sentiments %>% filter(value == 4) %>% count(words, sort = TRUE)
+book_sentiments %>% filter(value == 1) %>% count(words, sort = TRUE)
 
